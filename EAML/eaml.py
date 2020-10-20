@@ -10,8 +10,9 @@ import  torchvision.models as models
 import  torchvision.transforms as transforms
 import  argparse
 import  os
-from model import *
-from utils import *
+from    model import *
+from    utils import *
+from    lip_reg import *
 
 
 def main(args: argparse.Namespace):
@@ -27,6 +28,9 @@ def main(args: argparse.Namespace):
     rootdir = args.root
     num_epoch = args.epochs
     batch_size = args.batch_size
+    lip_balance = args.lip_balance
+    jth = args.lip_jth
+    save_dir = args.save
 
     setGPU(gpu_ind)
 
@@ -111,8 +115,22 @@ def main(args: argparse.Namespace):
                 
             im_s = im_s0[domain_length * batch_size:domain_length * batch_size + batch_size].cuda()
             lb_s = lb_s0[domain_length * batch_size:domain_length * batch_size + batch_size].cuda()
-            logits = cls(feature_extractor(im_s), fast_weights1, bn_training=True)
+            fss = feature_extractor(im_s)
+            logits = cls(fss, fast_weights1, bn_training=True)
+
+            reg_loss = 0
             
+            if lip_balance != 0:
+                margins = compute_margins(logits, lb_s)
+                norm_sq_dict = get_grad_hl_norms({'ft':fss}, torch.mean(margins), cls, create_graph=True, only_inputs=True)
+                
+                
+                for val in norm_sq_dict.values():
+                    j = val[1]
+                    j_ind = j > jth
+                    if torch.sum(j_ind) > 0:
+                        reg_loss += torch.mean(j[j_ind])
+
             for domain_ind in range(domain_length):
                 im_source1q = torch.from_numpy(xqry[domain_ind].astype('float32')).cuda()
                 label_source1q = torch.from_numpy(yqry[domain_ind].astype('int64')).cuda()
@@ -123,11 +141,17 @@ def main(args: argparse.Namespace):
             dloss = sum(losslst) / domain_length
             ce = F.cross_entropy(logits, lb_s)
             
-            loss =  balance_out * dloss + ce
+            if lip_balance == 0:
+                loss =  balance_out * dloss + ce
+            else:
+                loss =  balance_out * dloss + ce + lip_balance * reg_loss
             
             step += 1
             if step % print_freq ==0:
-                print(epoch,ce.data.cpu().numpy(),dloss.data.cpu().numpy())
+                if reg_loss == 0:
+                    print(epoch,ce.data.cpu().numpy(),dloss.data.cpu().numpy())
+                else:
+                    print(epoch,ce.data.cpu().numpy(),dloss.data.cpu().numpy(),reg_loss.data.cpu().numpy())
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -135,7 +159,7 @@ def main(args: argparse.Namespace):
         epoch += 1
 
 
-    torch.save(feature_extractor.state_dict(),'pre-trained.pth')
+    torch.save(feature_extractor.state_dict(),'save_dir')
 
 if __name__ == '__main__':
     dataset_names = sorted(
@@ -147,14 +171,14 @@ if __name__ == '__main__':
     parser.add_argument('root', metavar='DIR',
                         help='root path of dataset')
 
-    parser.add_argument('--epochs', default=400, type=int, metavar='N',
+    parser.add_argument('--epochs', default=1000, type=int, metavar='N',
                         help='number of total epochs to run')
     parser.add_argument('-b', '--batch-size', default=64, type=int,
                         metavar='N',
                         help='mini-batch size (default: 32)')
-    parser.add_argument('--lr-in',  default=1e-2, type=float,
+    parser.add_argument('--lr-in',  default=3e-2, type=float,
                         metavar='LR', help='initial learning rate in the inner loop')
-    parser.add_argument('--lr-out', default=1e-3, type=float,
+    parser.add_argument('--lr-out', default=3e-3, type=float,
                         metavar='LR', help='initial learning rate in the outer loop')
     parser.add_argument('-p', '--print-freq', default=100, type=int,
                         metavar='N', help='print frequency (default: 100)')
@@ -168,6 +192,12 @@ if __name__ == '__main__':
                         help='iteration of each inner loop')
     parser.add_argument('--domain-length', default=10, type=int,
                         help='length of target trajectories')
+    parser.add_argument('--lip-balance', default = 0.2, type=float,
+                        help='balance of regularization')
+    parser.add_argument('--lip-jth', default = 0.01, type=float,
+                        help='thresh of regularization')
+    parser.add_argument('--save', default = 'pretrained.pth', type=str,
+                        help='thresh of regularization')
     args = parser.parse_args()
     print(args)
     main(args)
