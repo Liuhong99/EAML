@@ -9,6 +9,10 @@ Code release for "Learning to Adapt to Evolving Domains" (NeurIPS 2020)
 - argparse
 - PIL
 
+## Dataset
+Rotated MNIST: [https://drive.google.com/file/d/1eaw42sg4Cgm34790AW_SKGCSkFosugl2/view?usp=sharing](https://drive.google.com/file/d/1eaw42sg4Cgm34790AW_SKGCSkFosugl2/view?usp=sharing)
+
+
 ## Training
 ```
 EAML Rotated MNIST
