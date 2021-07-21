@@ -15,18 +15,23 @@ Rotated MNIST: [https://drive.google.com/file/d/1eaw42sg4Cgm34790AW_SKGCSkFosugl
 
 ## Training
 ```
-EAML Rotated MNIST
+EAML 
 
 %run eaml.py rot_mnist_28/ --lip-balance 0.2 --lip-jth 0.01 --epochs 500 --lr-in 0.03 --lr-out 0.003 
 
 ```
 ```
-JAN Rotated MNIST
+JAN 
 
 %run JAN.py rot_mnist_28/ --lip-balance 0.2 --lip-jth 0.01 --epochs 500 --lr-in 0.03 --lr-out 0.003
 
 ```
+```
+Source 
 
+%run source.py rot_mnist_28/ --lip-balance 0.2 --lip-jth 0.01 --epochs 500 --lr-out 0.003
+
+```
 
 
 ## Acknowledgement
