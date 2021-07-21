@@ -11,11 +11,19 @@ Code release for "Learning to Adapt to Evolving Domains" (NeurIPS 2020)
 
 ## Training
 ```
-Rotated MNIST
+EAML Rotated MNIST
 
-%run eaml.py /workspace/liuhong/rot_mnist_28/ --lip-balance 0.2 --lip-jth 0.01 --epochs 1000 --lr-in 0.03 --lr-out 0.003 --save 'pretrained_lip_0.04.pth'
+%run eaml.py rot_mnist_28/ --lip-balance 0.2 --lip-jth 0.01 --epochs 500 --lr-in 0.03 --lr-out 0.003 
 
 ```
+```
+JAN Rotated MNIST
+
+%run JAN.py rot_mnist_28/ --lip-balance 0.2 --lip-jth 0.01 --epochs 500 --lr-in 0.03 --lr-out 0.003
+
+```
+
+
 
 ## Acknowledgement
 This code is implemented based on the [JAN (Joint Adaptation Networks)](https://github.com/thuml/Xlearn/blob/master/pytorch/src/loss.py) code, and it is our pleasure to acknowledge their contributions.
@@ -24,12 +32,19 @@ The meta-learning code is adapted from [https://github.com/dragen1860/MAML-Pytor
 ## Citation
 If you use this code for your research, please consider citing:
 ```
-@inproceedings{Wang19TransNorm,
-    title = {Transferable Normalization: Towards Improving Transferability of Deep Neural Networks},
-    author = {Wang, Ximei and Jin, Ying and Long, Mingsheng and Wang, Jianmin and Jordan, Michael I},
-    booktitle = {Advances in Neural Information Processing Systems 33},
-    year = {2020}
+@inproceedings{NEURIPS2020_fd69dbe2,
+ author = {Liu, Hong and Long, Mingsheng and Wang, Jianmin and Wang, Yu},
+ booktitle = {Advances in Neural Information Processing Systems},
+ editor = {H. Larochelle and M. Ranzato and R. Hadsell and M. F. Balcan and H. Lin},
+ pages = {22338--22348},
+ publisher = {Curran Associates, Inc.},
+ title = {Learning to Adapt to Evolving Domains},
+ url = {https://proceedings.neurips.cc/paper/2020/file/fd69dbe29f156a7ef876a40a94f65599-Paper.pdf},
+ volume = {33},
+ year = {2020}
 }
+
+
 ```
 
 ## Contact
